@@ -85,8 +85,6 @@ function VehicleList() {
       const response = await axios.delete(
         `https://localhost:44317/api/vehicle/${vehicleList[index].Id}`
       );
-
-      // Assuming the API returns a successful response, update the vehicleList state.
       setVehicleList(response.data);
     } catch (error) {
       console.error("Error deleting vehicle data: ", error);
@@ -160,7 +158,7 @@ function VehicleList() {
             </li>
           ))
         ) : (
-          <p>Loading...</p> // or show an error message if the API call failed
+          <p>Deleting...</p>
         )}
       </ul>
     </div>

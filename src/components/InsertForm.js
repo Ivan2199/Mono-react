@@ -7,10 +7,10 @@ function InsertForm({ setVehicleList }) {
   const [formData, setFormData] = useState({
     vehicleType: "",
     vehicleBrand: "",
-    YearOfProduction: "",
-    TopSpeed: "",
-    VehicleMileage: "",
-    VehicleOwner: "",
+    yearOfProduction: "",
+    topSpeed: "",
+    vehicleMileage: "",
+    vehicleOwner: "",
   });
 
   const handleInputChange = (e) => {
@@ -26,10 +26,10 @@ function InsertForm({ setVehicleList }) {
     if (
       formData.vehicleType.trim() === "" ||
       formData.vehicleBrand.trim() === "" ||
-      formData.YearOfProduction.trim() === "" ||
-      formData.TopSpeed.trim() === "" ||
-      formData.VehicleMileage.trim() === "" ||
-      formData.VehicleOwner.trim() === ""
+      formData.yearOfProduction.trim() === "" ||
+      formData.topSpeed.trim() === "" ||
+      formData.vehicleMileage.trim() === "" ||
+      formData.vehicleOwner.trim() === ""
     ) {
       alert("Please fill in all fields.");
       return;
@@ -45,10 +45,10 @@ function InsertForm({ setVehicleList }) {
       setFormData({
         vehicleType: "",
         vehicleBrand: "",
-        YearOfProduction: "",
-        TopSpeed: "",
-        VehicleMileage: "",
-        VehicleOwner: "",
+        yearOfProduction: "",
+        topSpeed: "",
+        vehicleMileage: "",
+        vehicleOwner: "",
       });
     } catch (error) {
       console.error("Error inserting vehicle data: ", error);
@@ -77,32 +77,32 @@ function InsertForm({ setVehicleList }) {
         <p>Enter Year of Production:</p>
         <input
           type="text"
-          name="YearOfProduction"
-          value={formData.YearOfProduction}
+          name="yearOfProduction"
+          value={formData.yearOfProduction}
           onChange={handleInputChange}
           required
         />
         <p>Enter Top Speed:</p>
         <input
           type="text"
-          name="TopSpeed"
-          value={formData.TopSpeed}
+          name="topSpeed"
+          value={formData.topSpeed}
           onChange={handleInputChange}
           required
         />
         <p>Enter Vehicle Mileage:</p>
         <input
           type="text"
-          name="VehicleMileage"
-          value={formData.VehicleMileage}
+          name="vehicleMileage"
+          value={formData.vehicleMileage}
           onChange={handleInputChange}
           required
         />
         <p>Enter Vehicle Owner:</p>
         <input
           type="text"
-          name="VehicleOwner"
-          value={formData.VehicleOwner}
+          name="vehicleOwner"
+          value={formData.vehicleOwner}
           onChange={handleInputChange}
           required
         />

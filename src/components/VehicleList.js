@@ -39,18 +39,23 @@ function VehicleList() {
     };
   }, []);
 
-  const handleEdit = (index) => {
-    setEditIndex(index);
+  const handleEdit = (id) => {
+    setEditIndex(id);
     setEditedVehicle({
-      ...vehicleList[index],
+      ...vehicleList.find((vehicle) => vehicle.id === id),
     });
   };
 
   const handleSave = () => {
     const updatedList = [...vehicleList];
-    updatedList[editIndex] = editedVehicle;
+    const index = updatedList.findIndex((vehicle) => vehicle.id === editIndex);
+    if (index !== -1) {
+      updatedList[index] = editedVehicle;
+      setVehicleList(updatedList);
+    }
     setEditIndex(-1);
     setEditedVehicle({
+      id: "",
       vehicleType: "",
       vehicleBrand: "",
       yearOfProduction: "",
@@ -63,6 +68,7 @@ function VehicleList() {
   const handleCancelEdit = () => {
     setEditIndex(-1);
     setEditedVehicle({
+      id: "",
       vehicleType: "",
       vehicleBrand: "",
       yearOfProduction: "",
@@ -80,12 +86,11 @@ function VehicleList() {
     });
   };
 
-  const handleDelete = async (index) => {
+  const handleDelete = async (id) => {
     try {
-      const response = await axios.delete(
-        `https://localhost:44317/api/vehicle/${vehicleList[index].Id}`
-      );
-      setVehicleList(response.data);
+      await axios.delete(`https://localhost:44317/api/vehicle/${id}`);
+      const updatedList = vehicleList.filter((vehicle) => vehicle.id !== id);
+      setVehicleList(updatedList);
     } catch (error) {
       console.error("Error deleting vehicle data: ", error);
     }
@@ -96,49 +101,49 @@ function VehicleList() {
       <h1>List Of Vehicles</h1>
       <ul>
         {Array.isArray(vehicleList) && vehicleList.length > 0 ? (
-          vehicleList.map((vehicle, index) => (
-            <li key={index}>
-              {index === editIndex ? (
+          vehicleList.map((vehicle) => (
+            <li key={vehicle.id}>
+              {vehicle.id === editIndex ? (
                 <div>
                   <p>Type: </p>
                   <input
                     type="text"
-                    name="VehicleType"
+                    name="vehicleType"
                     value={editedVehicle.vehicleType}
                     onChange={handleInputChange}
                   />
                   <p>Brand: </p>
                   <input
                     type="text"
-                    name="VehicleBrand"
+                    name="vehicleBrand"
                     value={editedVehicle.vehicleBrand}
                     onChange={handleInputChange}
                   />
                   <p>Year of Production: </p>
                   <input
                     type="text"
-                    name="YearOfProduction"
+                    name="yearOfProduction"
                     value={editedVehicle.yearOfProduction}
                     onChange={handleInputChange}
                   />
                   <p>Top Speed: </p>
                   <input
                     type="text"
-                    name="TopSpeed"
+                    name="topSpeed"
                     value={editedVehicle.topSpeed}
                     onChange={handleInputChange}
                   />
                   <p>Vehicle Mileage: </p>
                   <input
                     type="text"
-                    name="VehicleMileage"
+                    name="vehicleMileage"
                     value={editedVehicle.vehicleMileage}
                     onChange={handleInputChange}
                   />
                   <p>Vehicle Owner: </p>
                   <input
                     type="text"
-                    name="VehicleOwner"
+                    name="vehicleOwner"
                     value={editedVehicle.vehicleOwner}
                     onChange={handleInputChange}
                   />
@@ -147,12 +152,15 @@ function VehicleList() {
                 </div>
               ) : (
                 <div>
-                  Type: {vehicle.VehicleType}, Brand: {vehicle.VehicleBrand},
-                  Year of Production: {vehicle.YearOfProduction}, Top Speed:{" "}
-                  {vehicle.TopSpeed}, Vehicle Mileage: {vehicle.VehicleMileage},
-                  Vehicle Owner: {vehicle.VehicleOwner}
-                  <Button name="Edit" onClick={() => handleEdit(index)} />
-                  <Button name="Delete" onClick={() => handleDelete(index)} />
+                  Type: {vehicle.vehicleType}, Brand: {vehicle.vehicleBrand},
+                  Year of Production: {vehicle.yearOfProduction}, Top Speed:{" "}
+                  {vehicle.topSpeed}, Vehicle Mileage: {vehicle.vehicleMileage},
+                  Vehicle Owner: {vehicle.vehicleOwner}
+                  <Button name="Edit" onClick={() => handleEdit(vehicle.id)} />
+                  <Button
+                    name="Delete"
+                    onClick={() => handleDelete(vehicle.id)}
+                  />
                 </div>
               )}
             </li>

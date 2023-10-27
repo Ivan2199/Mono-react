@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Button from "./Button";
 import InsertForm from "./InsertForm";
 import VehicleList from "./VehicleList";
-
+import "../style/VehicleStyle.css";
 function Vehicle() {
   const [showList, setShowList] = useState(true);
 

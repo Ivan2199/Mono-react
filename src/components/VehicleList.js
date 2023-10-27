@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom"; // Assuming you are using React Router
 import Button from "./Button";
 import "../style/VehicleList.css";
+import VehicleData from "../components/VehicleData";
 import axios from "axios";
 
 function VehicleList() {
@@ -15,29 +17,25 @@ function VehicleList() {
     vehicleMileage: "",
     vehicleOwner: "",
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [totalSize, setTotalSize] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "https://localhost:44317/api/vehicle/?pageSize=30"
+          `https://localhost:44317/api/vehicle/?pageSize=${itemsPerPage}&pageNumber=${currentPage}`
         );
         const vehicleData = response.data;
         setVehicleList(vehicleData);
+        setTotalSize(vehicleData[1].totalSize);
       } catch (error) {
         console.error("Error fetching vehicle data: ", error);
       }
     };
-
     fetchData();
-    const intervalId = setInterval(() => {
-      fetchData();
-    }, 10000);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, []);
+  }, [currentPage, itemsPerPage]);
 
   const handleEdit = (id) => {
     setEditIndex(id);
@@ -96,9 +94,12 @@ function VehicleList() {
     }
   };
 
+  const totalPages = Math.ceil(totalSize / itemsPerPage);
+  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
   return (
     <div className="vehicleList">
       <h1>List Of Vehicles</h1>
+
       <ul>
         {Array.isArray(vehicleList) && vehicleList.length > 0 ? (
           vehicleList.map((vehicle) => (
@@ -147,15 +148,19 @@ function VehicleList() {
                     value={editedVehicle.vehicleOwner}
                     onChange={handleInputChange}
                   />
+
                   <Button name="Save" onClick={handleSave} />
                   <Button name="Cancel" onClick={handleCancelEdit} />
                 </div>
               ) : (
                 <div>
-                  Type: {vehicle.vehicleType}, Brand: {vehicle.vehicleBrand},
-                  Year of Production: {vehicle.yearOfProduction}, Top Speed:{" "}
-                  {vehicle.topSpeed}, Vehicle Mileage: {vehicle.vehicleMileage},
-                  Vehicle Owner: {vehicle.vehicleOwner}
+                  <Link to={`/VehicleData/${vehicle.id}`}>
+                    Type: {vehicle.vehicleType}, Brand: {vehicle.vehicleBrand},
+                    Year of Production: {vehicle.yearOfProduction}, Top Speed:{" "}
+                    {vehicle.topSpeed}, Vehicle Mileage:{" "}
+                    {vehicle.vehicleMileage}, Vehicle Owner:{" "}
+                    {vehicle.vehicleOwner}
+                  </Link>
                   <Button name="Edit" onClick={() => handleEdit(vehicle.id)} />
                   <Button
                     name="Delete"
@@ -166,9 +171,18 @@ function VehicleList() {
             </li>
           ))
         ) : (
-          <p>Deleting...</p>
+          <p>There is no data</p>
         )}
       </ul>
+      <div className="pagination">
+        {pageNumbers.map((number) => (
+          <Button
+            key={number}
+            name={number.toString()}
+            onClick={() => setCurrentPage(number)}
+          />
+        ))}
+      </div>
     </div>
   );
 }

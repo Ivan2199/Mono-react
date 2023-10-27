@@ -1,0 +1,11 @@
+.vehicleInformation{
+  display:inline-flex;
+  flex-direction: row;
+  justify-content: space-between;
+  color: beige;
+}
+
+.vehicleInformation p{
+  margin-left: 20px;
+  font-size: large;
+}

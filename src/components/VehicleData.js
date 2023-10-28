@@ -1,7 +1,7 @@
-import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import "../style/VehicleDataStyle.css";
+import vehicleService from "../service/VehicleService";
 
 function VehicleData() {
   const { id } = useParams();
@@ -20,12 +20,9 @@ function VehicleData() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get(
-          `https://localhost:44317/api/vehicle/${id}`
-        );
-        const vehicleData = response.data;
-        setVehicle(vehicleData);
-        setVehicleServiceHistory(vehicleData.vehicleServiceHistory);
+        const response = await vehicleService.fetchVehicle(id);
+        setVehicle(response);
+        setVehicleServiceHistory(response.vehicleServiceHistory);
       } catch (error) {
         console.error("Error fetching vehicle data: ", error);
       }
@@ -46,16 +43,25 @@ function VehicleData() {
         <p>Vehicle Owner: {vehicle.vehicleOwner}</p>
       </div>
       <div>
-        <h2>Service History</h2>
-        <ul>
-          {vehicleServiceHistory.map((historyItem) => (
-            <li key={historyItem.id}>
-              <p>Date: {historyItem.serviceDate}</p>
-              <p>Description: {historyItem.serviceDescription}</p>
-              <p>Cost: {historyItem.serviceCost}</p>
-            </li>
-          ))}
-        </ul>
+        <h1>Vehicle Service Information</h1>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {vehicleServiceHistory.map((historyItem) => (
+              <tr key={historyItem.id}>
+                <td>{historyItem.serviceDate}</td>
+                <td>{historyItem.serviceDescription}</td>
+                <td>{historyItem.serviceCost}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

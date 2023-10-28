@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import Button from "./Button";
+import vehicleService from "../service/VehicleService";
 import "../style/InsertForm.css";
 
 function InsertForm({ setVehicleList }) {
@@ -36,12 +36,8 @@ function InsertForm({ setVehicleList }) {
     }
 
     try {
-      const response = await axios.post(
-        "https://localhost:44317/api/vehicle",
-        formData
-      );
-
-      setVehicleList(response.data);
+      const response = vehicleService.insertVehicleData(formData);
+      setVehicleList(response);
       setFormData({
         vehicleType: "",
         vehicleBrand: "",

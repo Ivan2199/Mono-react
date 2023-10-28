@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom"; // Assuming you are using React Router
+import { Link } from "react-router-dom";
 import Button from "./Button";
 import "../style/VehicleList.css";
-import VehicleData from "../components/VehicleData";
-import axios from "axios";
+import vehicleService from "../service/VehicleService";
 
 function VehicleList() {
   const [vehicleList, setVehicleList] = useState([]);
@@ -24,12 +23,12 @@ function VehicleList() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get(
-          `https://localhost:44317/api/vehicle/?pageSize=${itemsPerPage}&pageNumber=${currentPage}`
+        const response = await vehicleService.fetchVehicleList(
+          itemsPerPage,
+          currentPage
         );
-        const vehicleData = response.data;
-        setVehicleList(vehicleData);
-        setTotalSize(vehicleData[1].totalSize);
+        setVehicleList(response);
+        setTotalSize(response[1].totalSize);
       } catch (error) {
         console.error("Error fetching vehicle data: ", error);
       }
@@ -44,12 +43,21 @@ function VehicleList() {
     });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const updatedList = [...vehicleList];
     const index = updatedList.findIndex((vehicle) => vehicle.id === editIndex);
     if (index !== -1) {
-      updatedList[index] = editedVehicle;
-      setVehicleList(updatedList);
+      try {
+        await vehicleService.updateVehicle(editIndex, editedVehicle);
+        const response = await vehicleService.fetchVehicleList(
+          itemsPerPage,
+          currentPage
+        );
+        setVehicleList(response);
+        setTotalSize(response[1].totalSize);
+      } catch (error) {
+        console.error("Error deleting vehicle data: ", error);
+      }
     }
     setEditIndex(-1);
     setEditedVehicle({
@@ -86,9 +94,13 @@ function VehicleList() {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://localhost:44317/api/vehicle/${id}`);
-      const updatedList = vehicleList.filter((vehicle) => vehicle.id !== id);
-      setVehicleList(updatedList);
+      await vehicleService.deleteVehicle(id);
+      const response = await vehicleService.fetchVehicleList(
+        itemsPerPage,
+        currentPage
+      );
+      setVehicleList(response);
+      setTotalSize(response[1].totalSize);
     } catch (error) {
       console.error("Error deleting vehicle data: ", error);
     }
@@ -96,84 +108,111 @@ function VehicleList() {
 
   const totalPages = Math.ceil(totalSize / itemsPerPage);
   const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+
   return (
     <div className="vehicleList">
       <h1>List Of Vehicles</h1>
-
-      <ul>
-        {Array.isArray(vehicleList) && vehicleList.length > 0 ? (
-          vehicleList.map((vehicle) => (
-            <li key={vehicle.id}>
-              {vehicle.id === editIndex ? (
-                <div>
-                  <p>Type: </p>
-                  <input
-                    type="text"
-                    name="vehicleType"
-                    value={editedVehicle.vehicleType}
-                    onChange={handleInputChange}
-                  />
-                  <p>Brand: </p>
-                  <input
-                    type="text"
-                    name="vehicleBrand"
-                    value={editedVehicle.vehicleBrand}
-                    onChange={handleInputChange}
-                  />
-                  <p>Year of Production: </p>
-                  <input
-                    type="text"
-                    name="yearOfProduction"
-                    value={editedVehicle.yearOfProduction}
-                    onChange={handleInputChange}
-                  />
-                  <p>Top Speed: </p>
-                  <input
-                    type="text"
-                    name="topSpeed"
-                    value={editedVehicle.topSpeed}
-                    onChange={handleInputChange}
-                  />
-                  <p>Vehicle Mileage: </p>
-                  <input
-                    type="text"
-                    name="vehicleMileage"
-                    value={editedVehicle.vehicleMileage}
-                    onChange={handleInputChange}
-                  />
-                  <p>Vehicle Owner: </p>
-                  <input
-                    type="text"
-                    name="vehicleOwner"
-                    value={editedVehicle.vehicleOwner}
-                    onChange={handleInputChange}
-                  />
-
-                  <Button name="Save" onClick={handleSave} />
-                  <Button name="Cancel" onClick={handleCancelEdit} />
-                </div>
-              ) : (
-                <div>
-                  <Link to={`/VehicleData/${vehicle.id}`}>
-                    Type: {vehicle.vehicleType}, Brand: {vehicle.vehicleBrand},
-                    Year of Production: {vehicle.yearOfProduction}, Top Speed:{" "}
-                    {vehicle.topSpeed}, Vehicle Mileage:{" "}
-                    {vehicle.vehicleMileage}, Vehicle Owner:{" "}
-                    {vehicle.vehicleOwner}
-                  </Link>
-                  <Button name="Edit" onClick={() => handleEdit(vehicle.id)} />
-                  <Button
-                    name="Delete"
-                    onClick={() => handleDelete(vehicle.id)}
-                  />
-                </div>
-              )}
-            </li>
-          ))
-        ) : (
-          <p>There is no data</p>
-        )}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Brand</th>
+            <th>Year of Production</th>
+            <th>Top Speed</th>
+            <th>Vehicle Mileage</th>
+            <th>Vehicle Owner</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.isArray(vehicleList) && vehicleList.length > 0 ? (
+            vehicleList.map((vehicle) => (
+              <tr key={vehicle.id}>
+                {vehicle.id === editIndex ? (
+                  <React.Fragment>
+                    <td>
+                      <input
+                        type="text"
+                        name="vehicleType"
+                        value={editedVehicle.vehicleType}
+                        onChange={handleInputChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="vehicleBrand"
+                        value={editedVehicle.vehicleBrand}
+                        onChange={handleInputChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="yearOfProduction"
+                        value={editedVehicle.yearOfProduction}
+                        onChange={handleInputChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="topSpeed"
+                        value={editedVehicle.topSpeed}
+                        onChange={handleInputChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="vehicleMileage"
+                        value={editedVehicle.vehicleMileage}
+                        onChange={handleInputChange}
+                      />
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        name="vehicleOwner"
+                        value={editedVehicle.vehicleOwner}
+                        onChange={handleInputChange}
+                      />
+                    </td>
+                    <td>
+                      <Button name="Save" onClick={handleSave} />
+                      <Button name="Cancel" onClick={handleCancelEdit} />
+                    </td>
+                  </React.Fragment>
+                ) : (
+                  <React.Fragment>
+                    <td>{vehicle.vehicleType}</td>
+                    <td>{vehicle.vehicleBrand}</td>
+                    <td>{vehicle.yearOfProduction}</td>
+                    <td>{vehicle.topSpeed}</td>
+                    <td>{vehicle.vehicleMileage}</td>
+                    <td>{vehicle.vehicleOwner}</td>
+                    <td>
+                      <Button
+                        name="Edit"
+                        onClick={() => handleEdit(vehicle.id)}
+                      />
+                      <Button
+                        name="Delete"
+                        onClick={() => handleDelete(vehicle.id)}
+                      />
+                      <Link to={`/VehicleData/${vehicle.id}`}>Details</Link>
+                    </td>
+                  </React.Fragment>
+                )}
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan="7">There is no data</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
       <div className="pagination">
         {pageNumbers.map((number) => (
           <Button
